@@ -88,20 +88,135 @@ class UserPool:
                 return user
         return None
     
+class Channels:
+
+    def __init__(self, config:dict[str, dict]) -> None:
+        self.config = config
+        self.channels:dict[str, list] = {}
+
+        self.set_channels()
+
+    def set_channels(self):
+        self.channels = {}
+        for channel_key in self.config.keys():
+            self.channels[channel_key] = []
+
+    def send_data(self, channel_key, sender_key, data):
+
+        if not channel_key in self.channels:
+            return None
+        
+        channel_config = self.config[channel_key]
+
+        if not channel_config["open"]:
+            print(1)
+            return None
+        
+        if len(self.channels[channel_key]) >= channel_config["max_length"]:
+            print(2)
+            return None
+        
+        if channel_config["whitelist"] ^ (sender_key in channel_config["use_list"]):
+            print(3)
+            return None
+
+        if (not channel_config["allow_duplicate"]) ^ (sender_key in self.channels[channel_key]):
+            print(4)
+            return None
+        
+        sendant = (sender_key, datetime.now(), data)
+        self.channels[channel_key].append(sendant)
+        return sendant
+
+
+
+QA = [
+    {
+        "question" : "What is Love?",
+        "options" : {
+            0 : "Baby",
+            1 : "Yes",
+            2 : "No",
+            3 : "Bruh"
+        },
+        "correct" : [ 0 ,]
+    },
+    {
+        "question" : "2 + 2?",
+        "options" : {
+            0 : "1",
+            1 : "2",
+            2 : "3",
+            3 : "4"
+        },
+        "correct" : [ 3 ,]
+    },
+    {
+        "question" : "5 * 5?",
+        "options" : {
+            0 : "16",
+            1 : "25",
+            2 : "36",
+            3 : "49"
+        },
+        "correct" : [ 1 ,]
+    },
+    {
+        "question" : "12 / 2?",
+        "options" : {
+            0 : "2",
+            1 : "3",
+            2 : "6",
+            3 : "12"
+        },
+        "correct" : [ 2 ,]
+    },
+]
+    
 class Room:
 
-    def __init__(self, user_pool:UserPool, room_config:RoomConfig, room_context:dict = {}):
+    def __init__(self, user_pool:UserPool, room_config:RoomConfig, channels:Channels, room_context:dict = {} ):
         self.user_pool = user_pool
         self.room_config = room_config
         self.room_context = room_context
+        self.channels = channels
 
     def main_loop(self):
         while True:
-            self.room_context["value"] = 2
-            time.sleep(1)
-            self.room_context["value"] = 10
-            time.sleep(1)
-        
+
+            _tick = 0.05
+            _timer = 0
+            for user in self.user_pool.users.values():
+                if user.data is None:
+                    user.data = {}
+                user.data["score"] = 0
+
+            for question in QA:
+
+                while _timer <= 1:
+
+                    self.room_context["default"] = question["question"]
+
+                    _timer += _tick
+                    time.sleep(_tick)
+
+                _timer = 0
+                while _timer <= 3:
+
+                    self.room_context["default"] = str(question["options"])
+
+                    _timer += _tick
+                    time.sleep(_tick)
+
+                _timer = 0
+                for response in self.channels.channels["answer"]:
+
+                    if response[2] in question["correct"]:
+                        self.user_pool.get_user_by_uuid(response[0]).data["score"] += 100
+                        print(self.user_pool.get_user_by_uuid(response[0]).user_config.display_name)
+
+                self.channels.channels["answer"] = []
+
     def start_loop(self):
         threading.Thread(target=self.main_loop).start()
 

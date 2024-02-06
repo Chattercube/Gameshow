@@ -3,10 +3,35 @@ import base_classes as bc
 import json
 from datetime import datetime, timedelta
 
+channel_config = {
+
+    "control" : {
+
+        "open" : True,
+        "whitelist" : False,
+        "use_list" : [],
+        "max_length" : 10,
+        "allow_duplicate" : True
+
+    },
+
+    "answer" : {
+
+        "open" : True,
+        "whitelist" : False,
+        "use_list" : [],
+        "max_length" : 10,
+        "allow_duplicate" : True
+        
+    }
+
+}
+
 app = Flask(__name__)
 
-room = bc.Room(bc.UserPool(), bc.RoomConfig())
+room = bc.Room(bc.UserPool(), bc.RoomConfig(), bc.Channels(channel_config))
 room.start_loop()
+print(room.channels.channels)
 
 @app.route("/list")
 def index():
@@ -43,10 +68,12 @@ def play():
             current_user.last_awake = datetime.now()
             return "Session Refreshed", 200
         
-        case "context":
-            return str(room.room_context['value']), 200
+        case "channel":
+            q = room.channels.send_data(body_json["context"]["channel_key"], bytes.fromhex(body_json["user_hex"]), body_json["context"]["data"])
+            return ("Sent", 200) if not q is None else ("Error", 400)
 
-            
+        case "display":
+            return room.room_context["default"], 200
 
 
 if __name__ == '__main__':
