@@ -1,0 +1,33 @@
+{
+
+    "control" : {
+
+        "open" : true,
+        "whitelist" : false,
+        "use_list" : [],
+        "max_length" : 10,
+        "allow_duplicate" : true
+
+    },
+
+    "answer" : {
+
+        "open" : true,
+        "whitelist" : false,
+        "use_list" : [],
+        "max_length" : 10,
+        "allow_duplicate" : true
+        
+    },
+
+    "display" : {
+
+        "open" : true,
+        "whitelist" : false,
+        "use_list" : [],
+        "max_length" : 10,
+        "allow_duplicate" : true
+        
+    }
+
+}

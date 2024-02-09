@@ -41,7 +41,7 @@ class User:
     def generate_uuid(self):
         self.uuid = uuid.uuid4().bytes
 
-    def __init__(self, remote_location:RemoteLocation, user_config:UserConfig, last_awake:datetime = None, data:dict = None) -> None:
+    def __init__(self,remote_location:RemoteLocation, user_config:UserConfig, last_awake:datetime = None, stats:dict = None) -> None:
 
         if last_awake == None:
             last_awake = datetime.now()
@@ -50,7 +50,7 @@ class User:
         self.remote_location = remote_location
         self.user_config = user_config
         self.last_awake = last_awake
-        self.data = data
+        self.stats = stats
 
     def __repr__(self) -> str:
         return f'{self.uuid.hex()},{self.remote_location},{self.user_config},{self.last_awake}'
@@ -88,12 +88,11 @@ class UserPool:
                 return user
         return None
     
-class Channels:
+class InputWrapper:
 
     def __init__(self, config:dict[str, dict]) -> None:
         self.config = config
         self.channels:dict[str, list] = {}
-
         self.set_channels()
 
     def set_channels(self):
@@ -101,32 +100,32 @@ class Channels:
         for channel_key in self.config.keys():
             self.channels[channel_key] = []
 
-    def send_data(self, channel_key, sender_key, data):
+    def send_input(self, channel_key, sender_key, data):
 
         if not channel_key in self.channels:
-            return None
+            return ("Invalid Channel", None)
         
         channel_config = self.config[channel_key]
 
         if not channel_config["open"]:
             print(1)
-            return None
+            return ("Closed Channel", None)
         
         if len(self.channels[channel_key]) >= channel_config["max_length"]:
             print(2)
-            return None
+            return ("Stack full", None)
         
         if channel_config["whitelist"] ^ (sender_key in channel_config["use_list"]):
             print(3)
-            return None
+            return ("Forbidden Channel", None)
 
         if (not channel_config["allow_duplicate"]) ^ (sender_key in self.channels[channel_key]):
             print(4)
-            return None
+            return ("Duplicate Not Allowed", None)
         
         sendant = (sender_key, datetime.now(), data)
         self.channels[channel_key].append(sendant)
-        return sendant
+        return (None, sendant)
 
 
 
@@ -172,14 +171,52 @@ QA = [
         "correct" : [ 2 ,]
     },
 ]
+
+class OutputWrapper:
+
+    def __init__(self, config:dict[str, dict]) -> None:
+        self.config = config
+        self.channels:dict[str, list] = {}
+        self.set_channels()
+
+    def set_channels(self):
+        self.channels = {}
+        for channel_key in self.config.keys():
+            self.channels[channel_key] = {}
+
+    def get_output(self, channel_key, sender_key, data = None):
+
+        if not channel_key in self.channels:
+            return ("Invalid Channel", None)
+        
+        channel_config = self.config[channel_key]
+
+        if not channel_config["open"]:
+            print(1)
+            return ("Closed Channel", None)
+        
+        if channel_config["whitelist"] ^ (sender_key in channel_config["use_list"]):
+            print(3)
+            return ("Forbidden Channel", None)
+
+        return (None, self.channels[channel_key])
     
+    def set_output(self, channel_key, data = {}):
+
+        if not channel_key in self.channels:
+            return ("Invalid Channel", None)
+        
+        self.channels[channel_key] = data
+        return (None, data)
+
+
 class Room:
 
-    def __init__(self, user_pool:UserPool, room_config:RoomConfig, channels:Channels, room_context:dict = {} ):
+    def __init__(self, user_pool:UserPool, room_config:RoomConfig, iwrap:InputWrapper, owrap:OutputWrapper):
         self.user_pool = user_pool
         self.room_config = room_config
-        self.room_context = room_context
-        self.channels = channels
+        self.iwrap = iwrap
+        self.owrap = owrap
 
     def main_loop(self):
         while True:
@@ -187,15 +224,15 @@ class Room:
             _tick = 0.05
             _timer = 0
             for user in self.user_pool.users.values():
-                if user.data is None:
-                    user.data = {}
-                user.data["score"] = 0
+                if user.stats is None:
+                    user.stats = {}
+                user.stats["score"] = 0
 
             for question in QA:
 
                 while _timer <= 1:
 
-                    self.room_context["default"] = question["question"]
+                    self.owrap.set_output("default", question["question"])
 
                     _timer += _tick
                     time.sleep(_tick)
@@ -203,19 +240,19 @@ class Room:
                 _timer = 0
                 while _timer <= 3:
 
-                    self.room_context["default"] = str(question["options"])
+                    self.owrap.set_output("default", question["question"])
 
                     _timer += _tick
                     time.sleep(_tick)
 
                 _timer = 0
-                for response in self.channels.channels["answer"]:
+                for response in self.iwrap.channels["answer"]:
 
                     if response[2] in question["correct"]:
-                        self.user_pool.get_user_by_uuid(response[0]).data["score"] += 100
+                        self.user_pool.get_user_by_uuid(response[0]).stats["score"] += 100
                         print(self.user_pool.get_user_by_uuid(response[0]).user_config.display_name)
 
-                self.channels.channels["answer"] = []
+                self.iwrap.channels["answer"] = []
 
     def start_loop(self):
         threading.Thread(target=self.main_loop).start()

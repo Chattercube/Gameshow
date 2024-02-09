@@ -1,0 +1,58 @@
+{
+    "general":
+    {
+        "title":"Simple Quiz Game",
+        "author":"Jane Doe",
+        "creation_date": null
+    },
+
+    "gameplay":{
+        "base_score" : 100,
+
+        "speed_score_multi" : [2, 1],
+        "max_streak" : 5,
+        "streak_score_multi" : [1, 2]
+    },
+
+    "slides":
+    [
+        {
+            "q_label" : "2 + 2 = ?",
+            "q_img" : null,
+
+            "options" : 
+            [
+                {
+                    "id" : 0,
+                    "label" : "1",
+                    "img" : null
+                },
+                {
+                    "id" : 1,
+                    "label" : "2",
+                    "img" : null
+                },
+                {
+                    "id" : 2,
+                    "label" : "3",
+                    "img" : null
+                },
+                {
+                    "id" : 3,
+                    "label" : "4",
+                    "img" : null
+                }
+            ],
+
+            "option_sets":{
+                "correct" : [3]
+            },
+
+            "title_card_duration" : 5,
+            "question_duration" : 30,
+            "score_multi" : [1, -0.5],
+            "extend_streak" : true,
+            "end_streak" : true
+        }
+    ]
+}

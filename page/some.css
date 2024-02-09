@@ -1,0 +1,48 @@
+.header-container{
+
+    display: flex;
+    border: 3px solid black;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+    height: 10dvh;
+     
+}
+
+.header-item{
+
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    text-align: right;
+
+}
+
+.body-container{
+
+    display: flex;
+    border: 3px solid black;
+    height: 50dvh;
+    width: auto;
+    flex-direction: column;
+
+     
+}
+
+.question-statement{
+    display: block;
+    width: auto;
+    height: 10%;
+    border: 3px solid black;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    
+}
+
+.question-image{
+    content:url(numbers.bmp);
+    max-width: 50%;
+    max-height: 70%;
+    margin: auto;
+}

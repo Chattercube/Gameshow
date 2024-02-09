@@ -2,7 +2,7 @@ import time, threading
 
 _tick = 0.05
 _timer = 0
-_
+
 _answers = []
 
 

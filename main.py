@@ -27,11 +27,13 @@ channel_config = {
 
 }
 
+
+
 app = Flask(__name__)
 
-room = bc.Room(bc.UserPool(), bc.RoomConfig(), bc.Channels(channel_config))
+room = bc.Room(bc.UserPool(), bc.RoomConfig(), bc.InputWrapper(channel_config))
 room.start_loop()
-print(room.channels.channels)
+print(room.iwrap.channels)
 
 @app.route("/list")
 def index():
@@ -68,12 +70,13 @@ def play():
             current_user.last_awake = datetime.now()
             return "Session Refreshed", 200
         
-        case "channel":
-            q = room.channels.send_data(body_json["context"]["channel_key"], bytes.fromhex(body_json["user_hex"]), body_json["context"]["data"])
+        case "input":
+            e, q = room.iwrap.send_input(body_json["context"]["channel_key"], bytes.fromhex(body_json["user_hex"]), body_json["context"]["data"])
             return ("Sent", 200) if not q is None else ("Error", 400)
 
-        case "display":
-            return room.room_context["default"], 200
+        case "output":
+            e, q = room.owrap.get_output(body_json["context"]["channel_key"], bytes.fromhex(body_json["user_hex"]))
+            return q, 200
 
 
 if __name__ == '__main__':
