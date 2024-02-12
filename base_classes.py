@@ -41,12 +41,16 @@ class User:
     def generate_uuid(self):
         self.uuid = uuid.uuid4().bytes
 
-    def __init__(self,remote_location:RemoteLocation, user_config:UserConfig, last_awake:datetime = None, stats:dict = None) -> None:
+    def generate_secret(self):
+        self.secret = uuid.uuid4().bytes
+
+    def __init__(self,remote_location:RemoteLocation, user_config:UserConfig, last_awake:datetime = None, stats:dict = {}) -> None:
 
         if last_awake == None:
             last_awake = datetime.now()
 
         self.generate_uuid()
+        self.generate_secret()
         self.remote_location = remote_location
         self.user_config = user_config
         self.last_awake = last_awake
@@ -58,7 +62,8 @@ class User:
 
 class UserPool:
 
-    def __init__(self, users:dict[bytes,User] = {}):
+    def __init__(self, config:dict[str, dict], users:dict[bytes,User] = {}):
+        self.config = config
         self.users = users
 
     def add_user(self, remote_location:RemoteLocation, user_config:UserConfig):
@@ -67,9 +72,14 @@ class UserPool:
         while new_user.uuid in self.users:
             new_user.generate_uuid()
 
+        for stat_key in self.config.keys():
+            new_user.stats[stat_key] = self.config[stat_key]["default"]
+
+        print(new_user.stats)
+
         self.users[new_user.uuid] = new_user
 
-        return new_user
+        return (None, new_user)
     
     def del_user_by_uuid(self, uuid:bytes):
         self.users.pop(uuid)
@@ -87,6 +97,21 @@ class UserPool:
             if user.remote_location == remote_location:
                 return user
         return None
+    
+    def get_stat(self, uuid:bytes, stat_key:str):
+
+        if not uuid in self.users:
+            return ("Invalid User", None)
+        
+        user = self.get_user_by_uuid(uuid)
+        
+        if not stat_key in user.stats:
+            return ("Invalid Stat", None)
+        
+        if not self.config[stat_key]["visible_self"]:
+            return ("invisible", user.stats[stat_key])
+        
+        return (None, { "data" : user.stats[stat_key] })
     
 class InputWrapper:
 
@@ -115,11 +140,11 @@ class InputWrapper:
             print(2)
             return ("Stack full", None)
         
-        if channel_config["whitelist"] ^ (sender_key in channel_config["use_list"]):
+        if channel_config["whitelist"] ^ ( sender_key in channel_config["use_list"]):
             print(3)
             return ("Forbidden Channel", None)
 
-        if (not channel_config["allow_duplicate"]) ^ (sender_key in self.channels[channel_key]):
+        if (not channel_config["allow_duplicate"]) and (sender_key in [ s[0] for s in self.channels[channel_key] ]):
             print(4)
             return ("Duplicate Not Allowed", None)
         
@@ -195,7 +220,7 @@ class OutputWrapper:
             print(1)
             return ("Closed Channel", None)
         
-        if channel_config["whitelist"] ^ (sender_key in channel_config["use_list"]):
+        if channel_config["whitelist"] ^ (sender_key in[ s[0] for s in self.channels[channel_key] ] in channel_config["use_list"]):
             print(3)
             return ("Forbidden Channel", None)
 

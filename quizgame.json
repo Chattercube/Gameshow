@@ -7,7 +7,9 @@
     },
 
     "gameplay":{
-        "base_score" : 100,
+        "base_score" : 1000,
+        "increment" : 1,
+        "max_score" : 4000,
 
         "speed_score_multi" : [2, 1],
         "max_streak" : 5,
@@ -40,6 +42,44 @@
                 {
                     "id" : 3,
                     "label" : "4",
+                    "img" : null
+                }
+            ],
+
+            "option_sets":{
+                "correct" : [3]
+            },
+
+            "title_card_duration" : 5,
+            "question_duration" : 30,
+            "score_multi" : [1, -0.5],
+            "extend_streak" : true,
+            "end_streak" : true
+        },
+        {
+            "q_label" : "4 * 7 = ?",
+            "q_img" : null,
+
+            "options" : 
+            [
+                {
+                    "id" : 0,
+                    "label" : "16",
+                    "img" : null
+                },
+                {
+                    "id" : 1,
+                    "label" : "20",
+                    "img" : null
+                },
+                {
+                    "id" : 2,
+                    "label" : "24",
+                    "img" : null
+                },
+                {
+                    "id" : 3,
+                    "label" : "28",
                     "img" : null
                 }
             ],

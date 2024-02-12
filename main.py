@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import base_classes as bc
 import json
 from datetime import datetime, timedelta
+from quizgame import QuizGameRoom
 
 channel_config = {
 
@@ -31,7 +32,11 @@ channel_config = {
 
 app = Flask(__name__)
 
-room = bc.Room(bc.UserPool(), bc.RoomConfig(), bc.InputWrapper(channel_config))
+def js_r(filename: str):
+    with open(filename) as f_in:
+        return json.load(f_in)
+
+room = QuizGameRoom(bc.RoomConfig(), js_r("quizgame.json"))
 room.start_loop()
 print(room.iwrap.channels)
 
@@ -52,9 +57,9 @@ def join():
     remote_location = bc.RemoteLocation(user_ip, request.environ["REMOTE_PORT"])
     name = body_json["name"]
 
-    new_user = room.user_pool.add_user(remote_location, bc.UserConfig(name, 0))
+    e, new_user = room.user_pool.add_user(remote_location, bc.UserConfig(name, 0))
 
-    return new_user.uuid.hex(), 200
+    return {"uuid" : new_user.uuid.hex(), "secret" : new_user.secret.hex()}, 200
     
 @app.route("/play", methods=['POST'])
 def play():
@@ -63,6 +68,9 @@ def play():
 
     if ((current_user := room.user_pool.get_user_by_uuid(bytes.fromhex(body_json["user_hex"]))) == None):
         return "Invalid Session", 400
+    
+    if (bytes.fromhex(body_json["user_secret"]) != current_user.secret):
+        return "Forbidden", 400
     
     match(body_json["type"]):
 
@@ -77,6 +85,10 @@ def play():
         case "output":
             e, q = room.owrap.get_output(body_json["context"]["channel_key"], bytes.fromhex(body_json["user_hex"]))
             return q, 200
+        
+        case "stat":
+            e, q = room.user_pool.get_stat(bytes.fromhex(body_json["user_hex"]), body_json["context"]["channel_key"])
+            return (q,200) if e is None else ("Forbidden", 200)
 
 
 if __name__ == '__main__':
