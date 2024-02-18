@@ -5,36 +5,47 @@
     justify-content: space-between;
     flex-direction: row;
     align-items: center;
-    height: 10dvh;
+    height: 10vh;
      
 }
 
-.header-item{
+.header-item1, .header-item2, .header-item3{
 
     display: flex;
     flex-direction: column;
     justify-content: start;
-    text-align: right;
 
+}
+
+.header-item1{
+    text-align: start;
+}
+
+.header-item2{
+    text-align: center;
+}
+
+.header-item3{
+    text-align: right;
 }
 
 .body-container{
 
     display: flex;
     border: 3px solid black;
-    height: 50dvh;
+    height: 50vh;
     width: auto;
     flex-direction: column;
+    justify-content: space-between;
 
      
 }
 
 .question-statement{
-    display: block;
-    width: auto;
+    display: flex;
     height: 10%;
-    border: 3px solid black;
     text-align: center;
+    justify-content: center;
     align-items: center;
     flex-direction: column;
     
@@ -44,5 +55,72 @@
     content:url(numbers.bmp);
     max-width: 50%;
     max-height: 70%;
-    margin: auto;
+    margin: 0px auto;
+}
+
+.msgbar-container{
+    display: flex;
+    height: auto;
+    width: auto;
+    flex-grow: 0;
+    justify-content: space-between;
+}
+
+.result-container{
+    flex-grow: 1;
+}
+
+.time-left, .no-of-response{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-size-adjust: 0.6;
+    background-color: violet;
+    color: white;
+}
+
+.button-grid {
+    display: inline-grid;
+    grid-template-columns: repeat(2, 1fr); /* Adjust the number as needed */
+    grid-template-rows: repeat(3, 1fr);
+    grid-auto-rows: 50%;
+    gap: 0; /* Adjust the gap size between buttons */
+    width: 100%;
+    height: calc(95vh - 60vh - 12px);
+  }
+  
+button {
+
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.item1 { grid-area: 1 / 1 / 1 / 1; }
+.item2 { grid-area: 1 / 2 / 1 / 2; }
+.item3 { grid-area: 2 / 1 / 2 / 1; }
+.item4 { grid-area: 2 / 2 / 2 / 2; }
+.item5 { grid-area: 3 / 1 / 3 / 1; }
+.item6 { grid-area: 3 / 2 / 3 / 2; }
+
+body{
+    font-family: 'Geologica', sans-serif;
+}
+
+.graph {
+    display: flex;
+    width: auto;
+    height: 2000px;
+    border: 1px solid #aeaeae;
+    background-color: #eaeaea;
+    justify-content: center;
+    align-items: end;
+}
+.bar {
+    width: 10%;
+    margin: 0 20px;
+    display: inline-block;
+    position: relative;
+    background-color: #aeaeae;
+    vertical-align: baseline;
 }

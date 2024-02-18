@@ -40,6 +40,10 @@ room = QuizGameRoom(bc.RoomConfig(), js_r("quizgame.json"))
 room.start_loop()
 print(room.iwrap.channels)
 
+@app.route('/')
+def page():
+    return open("webpage/login_page.html").read(),200
+
 @app.route("/list")
 def index():
     target_str = ""
@@ -92,4 +96,4 @@ def play():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5001)

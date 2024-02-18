@@ -12,7 +12,7 @@ def lerp (a, b, t):
     return a + (b-a) * t
 
 def clamp (s, f, v):
-    if s < v: return s
+    if v < s: return s
     if v > f: return f
     return v
 
@@ -135,7 +135,7 @@ class QuizGameRoom(Room):
                 self.iwrap.channels["answer"].clear()
                 start_time = datetime.now()
 
-                while _timer < slide["question_duration"]:
+                while _timer < slide["question_duration"] and len(self.iwrap.channels["answer"]) < len(self.user_pool.users):
                     
                     display = {
 
@@ -157,7 +157,7 @@ class QuizGameRoom(Room):
 
                 for answer in self.iwrap.channels["answer"][:]:
                     if answer[2] in slide["option_sets"]["correct"]:
-                        
+                        print(clamp(0, 1, (answer[1] - start_time) / timedelta(seconds=slide["question_duration"])))
                         player = self.user_pool.get_user_by_uuid(answer[0])
                         score_added = lerp(self.game_config["gameplay"]["speed_score_multi"][0], self.game_config["gameplay"]["speed_score_multi"][1], clamp(0, 1, (answer[1] - start_time) / timedelta(seconds=slide["question_duration"]))) * self.game_config["gameplay"]["base_score"]
 
