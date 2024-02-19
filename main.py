@@ -38,6 +38,7 @@ def js_r(filename: str):
 
 room = QuizGameRoom(bc.RoomConfig(), js_r("quizgame.json"))
 roomset = bc.RoomSet()
+room.start_loop()
 
 e, key = roomset.add_room(room)
 print(key)
