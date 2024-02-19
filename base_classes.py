@@ -3,6 +3,7 @@ import time, threading
 import uuid
 from datetime import datetime, timedelta
 from dataclasses import dataclass
+import random
 
 class RemoteLocation:
 
@@ -153,6 +154,7 @@ class InputWrapper:
         return (None, sendant)
 
 
+        
 
 QA = [
     {
@@ -283,7 +285,48 @@ class Room:
         threading.Thread(target=self.main_loop).start()
 
 
+class RoomSet:
+
+    MAX_ROOMS = 256
+
+    def __init__(self, rooms:dict[bytes, Room] = {}) -> None:
+        self.rooms = rooms
+        self.room_codes = {}
+
+    def add_room(self, room: Room):
+
+        if len(self.rooms) >= self.MAX_ROOMS:
+            return ("Error", None)
+        
+        room_uuid = uuid.uuid4().bytes
+        room_code = str(random.randrange(100000, 1000000))
+
+        if room_uuid in self.rooms:
+            return ("Error", None)
+        
+        if room_code in self.room_codes:
+            return ("Error", None)
+        
+        self.rooms[room_uuid] = room
+        self.room_codes[room_code] = room_uuid
+
+        return (None, room_code)
     
+    def get_room_by_code(self, code:str):
+
+        if not code in self.room_codes:
+            return ("Error", None)
+        
+        if not self.room_codes[code] in self.rooms:
+            return ("Error", None)
+        
+        return (None, self.rooms[self.room_codes[code]])
+    
+    
+
+
+
+
 
 
     
