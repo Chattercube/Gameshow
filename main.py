@@ -37,8 +37,10 @@ def js_r(filename: str):
         return json.load(f_in)
 
 room = QuizGameRoom(bc.RoomConfig(), js_r("quizgame.json"))
-room.start_loop()
-print(room.iwrap.channels)
+roomset = bc.RoomSet()
+
+e, key = roomset.add_room(room)
+print(key)
 
 @app.route('/')
 def page():
@@ -69,6 +71,11 @@ def join():
 def play():
 
     body_json = request.get_json()
+
+    e, room = roomset.get_room_by_code(body_json["room_code"])
+
+    if room is None:
+        return "Invalid Room", 400
 
     if ((current_user := room.user_pool.get_user_by_uuid(bytes.fromhex(body_json["user_hex"]))) == None):
         return "Invalid Session", 400
