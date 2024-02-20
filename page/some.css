@@ -80,13 +80,13 @@
 }
 
 .button-grid {
-    display: inline-grid;
+    display: grid;
     grid-template-columns: repeat(2, 1fr); /* Adjust the number as needed */
-    grid-template-rows: repeat(3, 1fr);
-    grid-auto-rows: 50%;
+    grid-auto-rows: calc(100%/3);
     gap: 0; /* Adjust the gap size between buttons */
     width: 100%;
-    height: calc(95vh - 60vh - 12px);
+    height: calc(100vh - 60vh);
+    align-content: stretch;
   }
   
 button {
@@ -123,4 +123,32 @@ body{
     position: relative;
     background-color: #aeaeae;
     vertical-align: baseline;
+}
+
+button.answer_input{
+    background-color: #04AA6D; /* Green */
+    border: none;
+    color: white;
+    padding: 2px;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    font-size: 16px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: row;
+    column-gap: 20px;
+    height: 100%;
+    font-family: inherit;
+    font-size: x-large;
+}
+
+button.answer_input:hover {
+    background-image: linear-gradient(rgb(0 0 0/40%) 0 0);
+}
+
+button.answer_input>img{
+    max-height: 100%;
+    width: auto;
 }
